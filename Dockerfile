@@ -1,5 +1,5 @@
-FROM ubuntu/bind9:latest
-WORKDIR /LandingNetwork
+FROM python:3.9
+WORKDIR /AutuDNS
 COPY . .
-ENV robot version
-CMD [ "python3", "LandingNetwork" ]
+RUN pip install -r requirement.txt
+CMD [ "python3", "main.py" ]
