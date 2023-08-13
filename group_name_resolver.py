@@ -12,3 +12,4 @@ class GroupNameResolver:
             if name.startswith(prefix):
                 return group_name
         return "DefaultGroup"
+        

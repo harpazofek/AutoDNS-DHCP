@@ -1,6 +1,7 @@
 # This module will contain the NameToIPMapper class.
 import logging
 import json
+from groupnameresolver import GroupNameResolver
 
 class DNSGroup:
     def __init__(self, group_name):
@@ -11,7 +12,7 @@ class NameToIPMapper:
     def __init__(self):
         self.groups = {}
         self.last_found_ip = None
-        self.group_name_resolver = GroupNameResolver()  # Assuming you're importing GroupNameResolver from another module
+        self.group_name_resolver = GroupNameResolver()
     
     def add_group(self, group_name):
         if group_name not in self.groups:
@@ -80,3 +81,4 @@ class NameToIPMapper:
             
             with open(file_name, "w") as file:
                 json.dump(group.dns_records, file, indent=4)
+                

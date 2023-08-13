@@ -1,54 +1,50 @@
-import os
+import schedule
 import time
-from scapy.all import *
+import logging
+import dnslib.server
+from logging.handlers import RotatingFileHandler
+from mylogger import setup_logging
+from nametoipmapper import NameToIPMapper
+from groupnameresolver import GroupNameResolver
+from dhcp_server import start_dhcp_server
 
-# DNS Configuration
-def set_dns(server):
-    # Determine the operating system
-    if os.name == 'nt':
-        # Windows
-        command = f'netsh interface ip set dns name="Wi-Fi" static {server} primary'
-    else:
-        # Linux/macOS
-        command = f'networksetup -setdnsservers Wi-Fi {server}'
+# Set up logging
+setup_logging()
 
-    # Execute the command
-    os.system(command)
-    print(f'DNS server set to {server}')
-
-
-# DHCP Configuration
-class DhcpPacketHandler:
-    def handle_dhcp_packet(self, packet):
-        if DHCP in packet and packet[DHCP].options[0][1] == 1:  # Check DHCP message type (1 for DHCP Discover)
-            print("DHCP Discover received")
-            print(f"Client MAC: {packet[Ether].src}")
-            # Extract VLAN ID from 802.1Q tag if present
-            vlan_id = None
-            if Dot1Q in packet:
-                vlan_id = packet[Dot1Q].vlan
-
-            # Check if the packet is from the specific VLAN
-            if vlan_id == 100:
-                print("DHCP request from VLAN 100 detected!")
-                # Add your custom actions here
-                # For example, send a DHCP Offer packet or perform other operations
-
-
-def start_dhcp_listener():
-    print("Starting DHCP listener...")
-    dhcp_handler = DhcpPacketHandler()
-    sniff(filter="udp and (port 67 or port 68)", prn=dhcp_handler.handle_dhcp_packet, store=0)
-
-
-# Main Program
 def main():
-    # Replace 'x.x.x.x' with the desired DNS server IP address
-    dns_server = 'x.x.x.x'
-    set_dns(dns_server)
+    name_mapper = NameToIPMapper()
+    
+    # Add mappings
+    name_mapper.add_mapping("example1", "192.168.1.1")
+    name_mapper.add_mapping("example2", "192.168.1.2")
+    name_mapper.add_mapping("example3", "192.168.1.3")
+    
+    # Specify the location where you want to search the IP (e.g., "XYZ" for YetAnotherGroup)
+    search_location = "XYZ"
+    
+    # Specify the name for which you want to search the IP
+    name_to_search = "example1"
+    
+    parameters = {
+        "parameter1": "value1",
+        "parameter2": "value2"
+    }
+    
+    schedule.every(1).hour.do(name_mapper.store_to_json, name_to_search, "192.168.1.1", parameters)
+    
+    dns_resolver = dnslib.server.DNSServer(
+        resolver=dnslib.server.BaseResolver(address_map={}),
+        address="0.0.0.0",
+        port=53
+    )
+    
+    dns_resolver.start_thread()
 
-    start_dhcp_listener()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
+    logging.info("Program started")
+    start_dhcp_server()  # Start DHCP server in a separate thread
     main()

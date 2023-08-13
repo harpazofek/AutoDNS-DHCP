@@ -9,9 +9,7 @@ def setup_logging():
                                      backupCount=4, encoding="ascii", delay=0)
     my_handler.setFormatter(log_formatter)
     my_handler.setLevel(logging.DEBUG)
-    stream_handler = logging.StreamHandler()
-
+    
     log = logging.getLogger('root')
     log.addHandler(my_handler)
-    log.addHandler(stream_handler)
     log.setLevel(logging.DEBUG)
