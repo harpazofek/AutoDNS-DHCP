@@ -18,9 +18,18 @@ def main():
     name_mapper.add_mapping("example2", "192.168.1.2")
     name_mapper.add_mapping("example3", "192.168.1.3")
     
-    name_to_search = "example1"  # Replace with the name you want to search for
+    # Specify the location where you want to search the IP (e.g., "XYZ" for YetAnotherGroup)
+    search_location = "XYZ"
     
-    schedule.every(1).hour.do(name_mapper.search_and_write_to_file, name_to_search)
+    # Specify the name for which you want to search the IP
+    name_to_search = "example1"
+    
+    parameters = {
+        "parameter1": "value1",
+        "parameter2": "value2"
+    }
+    
+    schedule.every(1).hour.do(name_mapper.store_to_json, name_to_search, "192.168.1.1", parameters)
     
     dns_resolver = dnslib.server.DNSServer(
         resolver=dnslib.server.BaseResolver(address_map={}),
